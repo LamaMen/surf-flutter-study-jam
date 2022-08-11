@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:surf_practice_chat_flutter/features/auth/exceptions/auth_exception.dart';
 import 'package:surf_practice_chat_flutter/features/auth/models/token_dto.dart';
 import 'package:surf_study_jam/surf_study_jam.dart';
@@ -28,6 +29,7 @@ abstract class IAuthRepository {
 }
 
 /// Simple implementation of [IAuthRepository], using [StudyJamClient].
+@Singleton(as: IAuthRepository)
 class AuthRepository implements IAuthRepository {
   final StudyJamClient _studyJamClient;
 
