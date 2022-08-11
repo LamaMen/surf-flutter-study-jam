@@ -1,22 +1,59 @@
 part of 'bloc.dart';
 
-abstract class AuthState {}
+class AuthState {
+  final FormData data;
+  final String? exception;
+  final bool isLoading;
+  final bool isAuthenticated;
 
-class EnterDataState implements AuthState {
-  const EnterDataState();
-}
+  const AuthState._({
+    required this.data,
+    required this.exception,
+    required this.isLoading,
+    required this.isAuthenticated,
+  });
 
-class CheckUserDataState implements AuthState {
-  const CheckUserDataState();
-}
+  const AuthState.initial()
+      : this._(
+          data: const FormData.empty(),
+          exception: null,
+          isLoading: false,
+          isAuthenticated: false,
+        );
 
-class CheckFailedState implements AuthState {
-  final Exception exception;
+  AuthState update(FormData data) {
+    return AuthState._(
+      data: data,
+      exception: null,
+      isLoading: false,
+      isAuthenticated: false,
+    );
+  }
 
-  const CheckFailedState(this.exception);
-}
+  AuthState loading() {
+    return AuthState._(
+      data: data,
+      exception: exception,
+      isLoading: true,
+      isAuthenticated: false,
+    );
+  }
 
-class CheckSucceededState implements AuthState {
-  final TokenDto token;
-  const CheckSucceededState(this.token);
+  AuthState success() {
+    return AuthState._(
+      data: data,
+      exception: null,
+      isLoading: false,
+      isAuthenticated: true,
+    );
+  }
+
+  AuthState error(String e) {
+    return AuthState._(
+      data: data.clearPassword(),
+      exception: e,
+      isLoading: false,
+      isAuthenticated: false,
+    );
+  }
 }

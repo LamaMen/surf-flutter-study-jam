@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surf_practice_chat_flutter/features/auth/bloc/bloc.dart';
+import 'package:surf_practice_chat_flutter/features/auth/widgets/auth_field.dart';
+import 'package:surf_practice_chat_flutter/features/auth/widgets/signin_button.dart';
 import 'package:surf_practice_chat_flutter/features/chat/screens/chat_screen.dart';
 
 /// Screen for authorization process.
@@ -21,7 +23,19 @@ class _AuthScreenState extends State<AuthScreen> {
   void initState() {
     _loginController = TextEditingController();
     _passwordController = TextEditingController();
+
+    _loginController.addListener(onDataEnter);
+    _passwordController.addListener(onDataEnter);
+
     super.initState();
+  }
+
+  void onDataEnter() {
+    final event = EnterDataEvent(
+      login: _loginController.text,
+      password: _passwordController.text,
+    );
+    context.read<AuthBloc>().add(event);
   }
 
   @override
@@ -32,56 +46,64 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Center(
           child: SizedBox(
             height: 300,
-            child: BlocListener<AuthBloc, AuthState>(
+            child: BlocConsumer<AuthBloc, AuthState>(
               listener: (context, state) {
-                if (state is CheckSucceededState) {
+                if (state.isAuthenticated) {
                   ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                  _pushToChat(context);
-                } else if (state is CheckFailedState) {
+                  Navigator.pushReplacementNamed(context, ChatScreen.route);
+                }
+
+                if (state.exception != null) {
+                  _passwordController.clear();
                   final snackBar = SnackBar(
-                    content: Text(state.exception.toString()),
+                    content: Text(state.exception!),
+                    backgroundColor: Colors.red,
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                } else if (state is CheckUserDataState) {
-                  const snackBar = SnackBar(
-                    content: Text('Loading'),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                } else {
-                  const snackBar = SnackBar(
-                    content: Text('Enter state'),
-                  );
+
                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                 }
               },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Вход в чат'),
-                  TextField(controller: _loginController),
-                  TextField(controller: _passwordController, obscureText: true),
-                  ElevatedButton(
-                    onPressed: () {
-                      final event = CheckUserDataEvent(
-                        _loginController.text,
-                        _passwordController.text,
-                      );
+              builder: (context, state) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Вход в чат',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 24),
+                    AuthField(
+                      hint: 'Логин',
+                      icon: Icons.tag_faces,
+                      controller: _loginController,
+                    ),
+                    const SizedBox(height: 16),
+                    AuthField(
+                      hint: 'Пароль',
+                      icon: Icons.lock,
+                      controller: _passwordController,
+                      isProtected: true,
+                    ),
+                    const SizedBox(height: 16),
+                    SignInButton(
+                      isActive: !state.data.isEmpty,
+                      isLoading: state.isLoading,
+                      voidCallback: () {
+                        FocusScopeNode currentFocus = FocusScope.of(context);
 
-                      context.read<AuthBloc>().add(event);
-                    },
-                    child: const Text('Войти'),
-                  ),
-                ],
-              ),
+                        if (!currentFocus.hasPrimaryFocus) {
+                          currentFocus.unfocus();
+                        }
+                      },
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),
       ),
     );
-  }
-
-  void _pushToChat(BuildContext context) {
-    Navigator.pushReplacementNamed(context, ChatScreen.route);
   }
 
   @override
