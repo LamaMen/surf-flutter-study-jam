@@ -4,7 +4,7 @@ import 'package:surf_practice_chat_flutter/core/injectable/setup.dart';
 import 'package:surf_practice_chat_flutter/features/auth/bloc/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/auth/screens/auth_screen.dart';
 import 'package:surf_practice_chat_flutter/features/auth/usecase/token_storage.dart';
-import 'package:surf_practice_chat_flutter/features/chat/repository/chat_repository.dart';
+import 'package:surf_practice_chat_flutter/features/chat/bloc/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/screens/chat_screen.dart';
 import 'package:surf_practice_chat_flutter/features/splash/screen/splash_screen.dart';
 
@@ -25,7 +25,10 @@ class MyApp extends StatelessWidget {
       routes: {
         SplashScreen.route: (_) => SplashScreen(storage: getIt<TokenStorage>()),
         ChatScreen.route: (_) {
-          return ChatScreen(chatRepository: getIt<IChatRepository>());
+          return BlocProvider<ChatBloc>(
+            create: (_) => getIt<ChatBloc>(),
+            child: const ChatScreen(),
+          );
         },
         AuthScreen.route: (_) {
           return BlocProvider<AuthBloc>(

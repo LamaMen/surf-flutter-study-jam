@@ -14,6 +14,8 @@ class ChatGeolocationDto {
     required this.longitude,
   });
 
+  bool get isValid => latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
+
   /// Named constructor for converting DTO from [StudyJamClient].
   ChatGeolocationDto.fromGeoPoint(List<double> geopoint)
       : latitude = geopoint[0],

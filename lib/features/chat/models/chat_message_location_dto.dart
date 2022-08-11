@@ -10,27 +10,25 @@ class ChatMessageGeolocationDto extends ChatMessageDto {
 
   /// Constructor for [ChatMessageGeolocationDto].
   ChatMessageGeolocationDto({
-    required ChatUserDto chatUserDto,
+    required super.chatUserDto,
     required this.location,
-    required String message,
-    required DateTime createdDate,
-  }) : super(
-          chatUserDto: chatUserDto,
-          message: message,
-          createdDateTime: createdDate,
-        );
+    required super.message,
+    required super.createdDateTime,
+    required super.isLast,
+  });
 
   /// Named constructor for converting DTO from [StudyJamClient].
   ChatMessageGeolocationDto.fromSJClient({
-    required SjMessageDto sjMessageDto,
-    required SjUserDto sjUserDto,
-  })  : location = ChatGeolocationDto.fromGeoPoint(sjMessageDto.geopoint!),
-        super(
-          createdDateTime: sjMessageDto.created,
-          message: sjMessageDto.text,
-          chatUserDto: ChatUserDto.fromSJClient(sjUserDto),
+    required SjMessageDto message,
+    required ChatUserDto user,
+    required super.isLast,
+  })  : location = ChatGeolocationDto.fromGeoPoint(message.geopoint!),
+        super.fromSJClient(
+          message: message,
+          user: user,
         );
 
   @override
-  String toString() => 'ChatMessageGeolocationDto(location: $location) extends ${super.toString()}';
+  String toString() =>
+      'ChatMessageGeolocationDto(location: $location) extends ${super.toString()}';
 }

@@ -1,73 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:surf_practice_chat_flutter/core/injectable/setup.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surf_practice_chat_flutter/features/auth/screens/auth_screen.dart';
-import 'package:surf_practice_chat_flutter/features/auth/usecase/auth_usecase.dart';
+import 'package:surf_practice_chat_flutter/features/chat/bloc/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
-import 'package:surf_practice_chat_flutter/features/chat/models/chat_user_dto.dart';
-import 'package:surf_practice_chat_flutter/features/chat/models/chat_user_local_dto.dart';
-import 'package:surf_practice_chat_flutter/features/chat/repository/chat_repository.dart';
+import 'package:surf_practice_chat_flutter/features/chat/widgets/chat_message.dart';
 
 /// Main screen of chat app, containing messages.
 class ChatScreen extends StatefulWidget {
-  /// Repository for chat functionality.
-  final IChatRepository chatRepository;
-
   static const route = '/chat';
 
-  /// Constructor for [ChatScreen].
-  const ChatScreen({
-    required this.chatRepository,
-    Key? key,
-  }) : super(key: key);
+  const ChatScreen({Key? key}) : super(key: key);
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final _nameEditingController = TextEditingController();
-
-  Iterable<ChatMessageDto> _currentMessages = [];
+  @override
+  void initState() {
+    _update();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: colorScheme.background,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(48),
-        child: _ChatAppBar(
-          controller: _nameEditingController,
-          onUpdatePressed: _onUpdatePressed,
+    return BlocListener<ChatBloc, ChatState>(
+      listener: (context, state) {
+        if (state is LogoutChatState) {
+          Navigator.pushReplacementNamed(context, AuthScreen.route);
+        }
+
+        if (state is FailedChatState) {
+          final snackBar = SnackBar(
+            content: Text(state.exception),
+            backgroundColor: Colors.red,
+          );
+
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: colorScheme.background,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: _ChatAppBar(onUpdatePressed: _update),
         ),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: _ChatBody(
-              messages: _currentMessages,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: BlocBuilder<ChatBloc, ChatState>(
+                builder: (context, state) {
+                  return _ChatBody(messages: state.messages);
+                },
+              ),
             ),
-          ),
-          _ChatTextField(onSendPressed: _onSendPressed),
-        ],
+            _ChatTextField(onSendPressed: _onSendPressed),
+          ],
+        ),
       ),
     );
   }
 
-  Future<void> _onUpdatePressed() async {
-    final messages = await widget.chatRepository.getMessages();
-    setState(() {
-      _currentMessages = messages;
-    });
+  void _update() {
+    const event = GetMessagesEvent();
+    context.read<ChatBloc>().add(event);
   }
 
   Future<void> _onSendPressed(String messageText) async {
-    final messages = await widget.chatRepository.sendMessage(messageText);
-    setState(() {
-      _currentMessages = messages;
-    });
+    final event = SendMessageEvent(messageText);
+    context.read<ChatBloc>().add(event);
   }
 }
 
@@ -79,26 +83,34 @@ class _ChatBody extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
+  int get count => messages.length;
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: messages.length,
-      itemBuilder: (_, index) => _ChatMessage(
-        chatData: messages.elementAt(index),
+      itemCount: count,
+      reverse: true,
+      itemBuilder: (_, index) => ChatMessage(
+        chatData: messages.elementAt(count - (index + 1)),
       ),
     );
   }
 }
 
-class _ChatTextField extends StatelessWidget {
+class _ChatTextField extends StatefulWidget {
   final ValueChanged<String> onSendPressed;
 
-  final _textEditingController = TextEditingController();
-
-  _ChatTextField({
+  const _ChatTextField({
     required this.onSendPressed,
     Key? key,
   }) : super(key: key);
+
+  @override
+  State<_ChatTextField> createState() => _ChatTextFieldState();
+}
+
+class _ChatTextFieldState extends State<_ChatTextField> {
+  final _textEditingController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +136,10 @@ class _ChatTextField extends StatelessWidget {
               ),
             ),
             IconButton(
-              onPressed: () => onSendPressed(_textEditingController.text),
+              onPressed: () {
+                widget.onSendPressed(_textEditingController.text);
+                _textEditingController.clear();
+              },
               icon: const Icon(Icons.send),
               color: colorScheme.onSurface,
             ),
@@ -133,35 +148,34 @@ class _ChatTextField extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
+  }
 }
 
-class _ChatAppBar extends StatefulWidget {
+class _ChatAppBar extends StatelessWidget {
   final VoidCallback onUpdatePressed;
-  final TextEditingController controller;
 
   const _ChatAppBar({
     required this.onUpdatePressed,
-    required this.controller,
     Key? key,
   }) : super(key: key);
 
   @override
-  State<_ChatAppBar> createState() => _ChatAppBarState();
-}
-
-class _ChatAppBarState extends State<_ChatAppBar> {
-  @override
   Widget build(BuildContext context) {
     return AppBar(
       leading: IconButton(
-        onPressed: _singOut,
+        onPressed: () => _singOut(context),
         icon: const Icon(Icons.logout),
       ),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           IconButton(
-            onPressed: widget.onUpdatePressed,
+            onPressed: onUpdatePressed,
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -169,92 +183,8 @@ class _ChatAppBarState extends State<_ChatAppBar> {
     );
   }
 
-  // todo - extract to bloc
-  Future<void> _singOut() async {
-    final auth = getIt<AuthUseCase>();
-    await auth.signOut();
-    if (mounted) Navigator.pushReplacementNamed(context, AuthScreen.route);
-  }
-}
-
-class _ChatMessage extends StatelessWidget {
-  final ChatMessageDto chatData;
-
-  const _ChatMessage({
-    required this.chatData,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Material(
-      color: chatData.chatUserDto is ChatUserLocalDto
-          ? colorScheme.primary.withOpacity(.1)
-          : null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 18,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _ChatAvatar(userData: chatData.chatUserDto),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    chatData.chatUserDto.name ?? '',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(chatData.message ?? ''),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ChatAvatar extends StatelessWidget {
-  static const double _size = 42;
-
-  final ChatUserDto userData;
-
-  const _ChatAvatar({
-    required this.userData,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return SizedBox(
-      width: _size,
-      height: _size,
-      child: Material(
-        color: colorScheme.primary,
-        shape: const CircleBorder(),
-        child: Center(
-          child: Text(
-            userData.name != null
-                ? '${userData.name!.split(' ').first[0]}${userData.name!.split(' ').last[0]}'
-                : '',
-            style: TextStyle(
-              color: colorScheme.onPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-            ),
-          ),
-        ),
-      ),
-    );
+  void _singOut(BuildContext context) {
+    const event = SingOutEvent();
+    context.read<ChatBloc>().add(event);
   }
 }
