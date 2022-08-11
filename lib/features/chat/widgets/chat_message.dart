@@ -2,6 +2,7 @@ import 'package:bubble/bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:map_launcher/map_launcher.dart' as launcher;
 import 'package:surf_practice_chat_flutter/core/utils/date_utils.dart';
 import 'package:surf_practice_chat_flutter/core/utils/list_utils.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_geolocation_geolocation_dto.dart';
@@ -164,6 +165,7 @@ class _LocationContent extends StatelessWidget {
       height: 150,
       child: FlutterMap(
         options: MapOptions(
+          onTap: (_, __) => _openMap(),
           center: marker.point,
           zoom: 12.5,
         ),
@@ -175,6 +177,15 @@ class _LocationContent extends StatelessWidget {
           MarkerLayerOptions(markers: [marker]),
         ],
       ),
+    );
+  }
+
+  void _openMap() async {
+    final availableMaps = await launcher.MapLauncher.installedMaps;
+
+    await availableMaps.first.showMarker(
+      coords: launcher.Coords(location.latitude, location.longitude),
+      title: "User Location",
     );
   }
 }
