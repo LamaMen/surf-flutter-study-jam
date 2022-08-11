@@ -1,5 +1,7 @@
+import 'package:geolocator/geolocator.dart';
 import 'package:injectable/injectable.dart';
 import 'package:surf_practice_chat_flutter/core/result/result.dart';
+import 'package:surf_practice_chat_flutter/features/chat/models/chat_geolocation_geolocation_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_location_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/repository/chat_repository.dart';
@@ -22,6 +24,20 @@ class ChatUseCase {
   FutureResult<Iterable<ChatMessageDto>> sendMessage(String message) async {
     try {
       await _chatRepository.sendMessage(message);
+      final newMessages = await _fetchMessages();
+      return Ok(newMessages);
+    } on Exception catch (e) {
+      return Fail(e);
+    }
+  }
+
+  FutureResult<Iterable<ChatMessageDto>> sendGeolocationMessage() async {
+    try {
+      await _chatRepository.sendGeolocationMessage(
+        location: await _determinePosition(),
+        message: 'Мое расположение :)',
+      );
+
       final newMessages = await _fetchMessages();
       return Ok(newMessages);
     } on Exception catch (e) {
@@ -65,5 +81,34 @@ class ChatUseCase {
         .toList();
 
     return me;
+  }
+
+  Future<ChatGeolocationDto> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw Exception('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    final position = await Geolocator.getCurrentPosition();
+    return ChatGeolocationDto(
+      latitude: position.latitude,
+      longitude: position.longitude,
+    );
   }
 }

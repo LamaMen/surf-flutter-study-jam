@@ -15,3 +15,7 @@ class SendMessageEvent implements ChatEvent {
 
   const SendMessageEvent(this.message);
 }
+
+class SendGeolocationMessageEvent implements ChatEvent {
+  const SendGeolocationMessageEvent();
+}

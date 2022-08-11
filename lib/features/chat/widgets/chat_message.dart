@@ -121,22 +121,26 @@ class _ChatAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     if (!isShow) {
       return const SizedBox(width: _size, height: _size);
     }
+
+    final backgroundColor =
+        Colors.primaries[user.hashCode % Colors.primaries.length];
+    final foregroundColor =
+        backgroundColor.computeLuminance() > 0.5 ? Colors.black : Colors.white;
 
     return SizedBox(
       width: _size,
       height: _size,
       child: Material(
-        color: colorScheme.primary,
+        color: backgroundColor,
         shape: const CircleBorder(),
         child: Center(
           child: Text(
             user.initials,
             style: TextStyle(
-              color: colorScheme.onPrimary,
+              color: foregroundColor,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),

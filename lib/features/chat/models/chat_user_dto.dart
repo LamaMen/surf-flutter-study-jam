@@ -20,6 +20,17 @@ class ChatUserDto {
   @override
   String toString() => 'ChatUserDto(name: $name)';
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatUserDto &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name;
+
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode;
+
   String get initials {
     final byWords = name.split(' ').where((w) => w.isNotEmpty);
     if (byWords.length > 1) {
