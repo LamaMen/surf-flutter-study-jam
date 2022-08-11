@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:surf_practice_chat_flutter/core/injectable/setup.dart';
+import 'package:surf_practice_chat_flutter/features/auth/screens/auth_screen.dart';
+import 'package:surf_practice_chat_flutter/features/auth/usecase/auth_usecase.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_user_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_user_local_dto.dart';
@@ -8,6 +11,8 @@ import 'package:surf_practice_chat_flutter/features/chat/repository/chat_reposit
 class ChatScreen extends StatefulWidget {
   /// Repository for chat functionality.
   final IChatRepository chatRepository;
+
+  static const route = '/chat';
 
   /// Constructor for [ChatScreen].
   const ChatScreen({
@@ -130,7 +135,7 @@ class _ChatTextField extends StatelessWidget {
   }
 }
 
-class _ChatAppBar extends StatelessWidget {
+class _ChatAppBar extends StatefulWidget {
   final VoidCallback onUpdatePressed;
   final TextEditingController controller;
 
@@ -141,18 +146,34 @@ class _ChatAppBar extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<_ChatAppBar> createState() => _ChatAppBarState();
+}
+
+class _ChatAppBarState extends State<_ChatAppBar> {
+  @override
   Widget build(BuildContext context) {
     return AppBar(
+      leading: IconButton(
+        onPressed: _singOut,
+        icon: const Icon(Icons.logout),
+      ),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           IconButton(
-            onPressed: onUpdatePressed,
+            onPressed: widget.onUpdatePressed,
             icon: const Icon(Icons.refresh),
           ),
         ],
       ),
     );
+  }
+
+  // todo - extract to bloc
+  Future<void> _singOut() async {
+    final auth = getIt<AuthUseCase>();
+    await auth.signOut();
+    if (mounted) Navigator.pushReplacementNamed(context, AuthScreen.route);
   }
 }
 
@@ -168,7 +189,9 @@ class _ChatMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Material(
-      color: chatData.chatUserDto is ChatUserLocalDto ? colorScheme.primary.withOpacity(.1) : null,
+      color: chatData.chatUserDto is ChatUserLocalDto
+          ? colorScheme.primary.withOpacity(.1)
+          : null,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: 18,
