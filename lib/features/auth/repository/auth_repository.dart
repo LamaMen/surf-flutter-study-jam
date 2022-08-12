@@ -1,3 +1,5 @@
+import 'package:injectable/injectable.dart';
+import 'package:surf_practice_chat_flutter/core/client/client.dart';
 import 'package:surf_practice_chat_flutter/features/auth/exceptions/auth_exception.dart';
 import 'package:surf_practice_chat_flutter/features/auth/models/token_dto.dart';
 import 'package:surf_study_jam/surf_study_jam.dart';
@@ -28,11 +30,12 @@ abstract class IAuthRepository {
 }
 
 /// Simple implementation of [IAuthRepository], using [StudyJamClient].
+@Singleton(as: IAuthRepository)
 class AuthRepository implements IAuthRepository {
-  final StudyJamClient _studyJamClient;
+  final Client _client;
 
   /// Constructor for [AuthRepository].
-  AuthRepository(this._studyJamClient);
+  AuthRepository(this._client);
 
   @override
   Future<TokenDto> signIn({
@@ -40,7 +43,7 @@ class AuthRepository implements IAuthRepository {
     required String password,
   }) async {
     try {
-      final token = await _studyJamClient.signin(login, password);
+      final token = await _client.signin(login, password);
 
       return TokenDto(token: token);
     } on Exception catch (e) {
@@ -50,6 +53,6 @@ class AuthRepository implements IAuthRepository {
 
   @override
   Future<void> signOut() {
-    return _studyJamClient.logout();
+    return _client.logout();
   }
 }

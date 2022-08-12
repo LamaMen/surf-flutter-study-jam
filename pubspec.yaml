@@ -6,19 +6,40 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  surf_study_jam: ^0.1.0
+  surf_study_jam: ^0.2.0+1
+
   cupertino_icons: ^1.0.2
+
+  bloc: ^8.1.0
+  flutter_bloc: ^8.0.1
+  either_dart: ^0.2.0
+  injectable: ^1.5.3
+  get_it: ^7.2.0
+  flutter_secure_storage: ^5.1.0
+  bubble: ^1.2.1
+  intl: ^0.17.0
+  flutter_map: ^2.2.0
+  location: ^4.4.0
+  latlong2: ^0.8.1
+  map_launcher: ^2.3.0+1
+  geolocator: ^9.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^2.0.1
-flutter:
 
+  build_runner: ^2.2.0
+  injectable_generator: ^1.5.3
+
+flutter:
   uses-material-design: true
+
+  assets:
+    - assets/placeholder.jpeg
