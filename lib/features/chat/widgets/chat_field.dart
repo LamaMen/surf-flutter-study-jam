@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:surf_practice_chat_flutter/features/chat/bloc/bloc.dart';
+import 'package:surf_practice_chat_flutter/features/chat/bloc/chat/bloc.dart';
 
 class ChatTextField extends StatefulWidget {
   final ValueChanged<String> onSendPressed;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surf_practice_chat_flutter/features/app_bar/widgets/chat_app_bar.dart';
-import 'package:surf_practice_chat_flutter/features/chat/bloc/bloc.dart';
-import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
+import 'package:surf_practice_chat_flutter/features/chat/bloc/chat/bloc.dart';
+import 'package:surf_practice_chat_flutter/features/chat/bloc/title/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/widgets/chat_field.dart';
 import 'package:surf_practice_chat_flutter/features/chat/widgets/chat_message.dart';
 
@@ -38,25 +38,24 @@ class _ChatScreenState extends State<ChatScreen> {
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
         }
       },
-      child: Scaffold(
-        backgroundColor: colorScheme.background,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: ChatAppBar(onUpdatePressed: _update),
-        ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: BlocBuilder<ChatBloc, ChatState>(
-                builder: (context, state) {
-                  return _ChatBody(messages: state.messages);
-                },
-              ),
+      child: BlocBuilder<ChatTitleBloc, ChatTitleState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: colorScheme.background,
+            appBar: ChatAppBar(
+              onUpdatePressed: _update,
+              title: state.title,
+              subtitle: state.subtitle,
             ),
-            ChatTextField(onSendPressed: _onSendPressed),
-          ],
-        ),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Expanded(child: _ChatBody()),
+                ChatTextField(onSendPressed: _onSendPressed),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -73,23 +72,25 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
 class _ChatBody extends StatelessWidget {
-  final Iterable<ChatMessageDto> messages;
-
   const _ChatBody({
-    required this.messages,
     Key? key,
   }) : super(key: key);
 
-  int get count => messages.length;
-
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: count,
-      reverse: true,
-      itemBuilder: (_, index) => ChatMessage(
-        chatData: messages.elementAt(count - (index + 1)),
-      ),
+    return BlocBuilder<ChatBloc, ChatState>(
+      builder: (context, state) {
+        final messages = state.messages;
+        final count = messages.length;
+
+        return ListView.builder(
+          itemCount: count,
+          reverse: true,
+          itemBuilder: (_, index) => ChatMessage(
+            chatData: messages.elementAt(count - (index + 1)),
+          ),
+        );
+      },
     );
   }
 }

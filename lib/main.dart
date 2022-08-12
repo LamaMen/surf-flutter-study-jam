@@ -4,11 +4,13 @@ import 'package:surf_practice_chat_flutter/core/injectable/setup.dart';
 import 'package:surf_practice_chat_flutter/features/auth/bloc/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/auth/screens/auth_screen.dart';
 import 'package:surf_practice_chat_flutter/features/auth/usecase/token_storage.dart';
-import 'package:surf_practice_chat_flutter/features/chat/bloc/bloc.dart';
+import 'package:surf_practice_chat_flutter/features/chat/bloc/chat/bloc.dart';
+import 'package:surf_practice_chat_flutter/features/chat/bloc/title/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/screens/chat_screen.dart';
 import 'package:surf_practice_chat_flutter/features/splash/screen/splash_screen.dart';
 import 'package:surf_practice_chat_flutter/features/topics/bloc/logout/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/topics/bloc/topics/bloc.dart';
+import 'package:surf_practice_chat_flutter/features/topics/models/chat_topic_dto.dart';
 import 'package:surf_practice_chat_flutter/features/topics/screens/topics_screen.dart';
 
 void main() async {
@@ -49,11 +51,18 @@ class MyApp extends StatelessWidget {
 
   Route<dynamic>? _routes(RouteSettings settings) {
     if (settings.name == ChatScreen.route) {
-      final chatId = settings.arguments as int? ?? 1;
+      final chat = settings.arguments as ChatTopicDto;
       return MaterialPageRoute(
         builder: (_) {
-          return BlocProvider<ChatBloc>(
-            create: (_) => getIt<ChatBloc>(param1: chatId),
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider<ChatBloc>(
+                create: (_) => getIt<ChatBloc>(param1: chat.id),
+              ),
+              BlocProvider<ChatTitleBloc>(
+                create: (_) => getIt<ChatTitleBloc>(param1: chat),
+              ),
+            ],
             child: const ChatScreen(),
           );
         },

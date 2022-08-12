@@ -21,23 +21,31 @@ class ChatUseCase {
     }
   }
 
-  FutureResult<void> sendMessage(String message) async {
+  FutureResult<Iterable<ChatMessageDto>> sendMessage({
+    required String message,
+    required int chatId,
+  }) async {
     try {
-      await _chatRepository.sendMessage(message);
-      return const Ok(null);
+      await _chatRepository.sendMessage(chatId: chatId, message: message);
+      final newMessages = await _fetchMessages(chatId);
+      return Ok(newMessages);
     } on Exception catch (e) {
       return Fail(e);
     }
   }
 
-  FutureResult<void> sendGeolocationMessage() async {
+  FutureResult<Iterable<ChatMessageDto>> sendGeolocationMessage(
+    int chatId,
+  ) async {
     try {
       await _chatRepository.sendGeolocationMessage(
+        chatId: chatId,
         location: await _determinePosition(),
         message: 'Мое расположение :)',
       );
 
-      return const Ok(null);
+      final newMessages = await _fetchMessages(chatId);
+      return Ok(newMessages);
     } on Exception catch (e) {
       return Fail(e);
     }

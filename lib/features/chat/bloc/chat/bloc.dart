@@ -40,13 +40,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     emit(LoadingChatState(state));
+    final messages = await _chatUseCase.sendMessage(
+      chatId: state.chatId,
+      message: event.message,
+    );
 
-    final result = await _chatUseCase.sendMessage(event.message);
-    if (result.isLeft) {
-      emit(FailedChatState(state, result.left.toString()));
-    }
-
-    final messages = await _chatUseCase.getMessages(state.chatId);
     emit(messages.fold(
       (f) => FailedChatState(state, f.toString()),
       (m) => state.copyWithMessages(m),
@@ -58,13 +56,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     emit(LoadingChatState(state));
+    final messages = await _chatUseCase.sendGeolocationMessage(state.chatId);
 
-    final result = await _chatUseCase.sendGeolocationMessage();
-    if (result.isLeft) {
-      emit(FailedChatState(state, result.left.toString()));
-    }
-
-    final messages = await _chatUseCase.getMessages(state.chatId);
     emit(messages.fold(
       (f) => FailedChatState(state, f.toString()),
       (m) => state.copyWithMessages(m),

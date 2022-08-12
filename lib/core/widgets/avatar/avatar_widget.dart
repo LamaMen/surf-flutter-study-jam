@@ -4,7 +4,7 @@ import 'package:surf_practice_chat_flutter/core/widgets/avatar/model_with_initia
 const colors = Colors.primaries;
 
 class AvatarWidget extends StatelessWidget {
-  final ModelWithInitials model;
+  final ModelWithAvatar model;
   final double? size;
 
   const AvatarWidget({
@@ -15,28 +15,30 @@ class AvatarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return SizedBox(width: size, height: size, child: _Avatar(model));
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  final ModelWithAvatar model;
+
+  const _Avatar(this.model);
+
+  @override
+  Widget build(BuildContext context) {
+    if (model.avatar != null) {
+      return CircleAvatar(
+        backgroundImage: NetworkImage(model.avatar!),
+      );
+    }
     final colorIndex = model.hashCode % colors.length;
     final color = colors[colorIndex];
-    final foregroundColor =
+    final textColor =
         color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
 
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Material(
-        color: color,
-        shape: const CircleBorder(),
-        child: Center(
-          child: Text(
-            model.initials,
-            style: TextStyle(
-              color: foregroundColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-        ),
-      ),
+    return CircleAvatar(
+      backgroundColor: color,
+      child: Text(model.initials, style: TextStyle(color: textColor)),
     );
   }
 }

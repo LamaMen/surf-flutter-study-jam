@@ -28,20 +28,17 @@ class _TopicsScreenState extends State<TopicsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(48),
-        child: BlocListener<AppBarBloc, AppBarState>(
+      appBar: ChatAppBar(
+        onUpdatePressed: _update,
+        title: 'Чаты',
+        leading: BlocListener<AppBarBloc, AppBarState>(
           listenWhen: (_, state) => state is LogoutState,
           listener: (context, _) {
             Navigator.pushReplacementNamed(context, AuthScreen.route);
           },
-          child: ChatAppBar(
-            onUpdatePressed: _update,
-            title: 'Чаты',
-            leading: IconButton(
-              onPressed: () => _singOut(context),
-              icon: const Icon(Icons.logout),
-            ),
+          child: IconButton(
+            onPressed: () => _singOut(context),
+            icon: const Icon(Icons.logout),
           ),
         ),
       ),
@@ -72,6 +69,7 @@ class _TopicsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      padding: const EdgeInsets.only(top: 8),
       itemCount: topics.length,
       itemBuilder: (_, index) => _TopicItem(
         topic: topics.elementAt(index),
@@ -89,12 +87,13 @@ class _TopicItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: AvatarWidget(model: topic, size: 40),
-      title: Text(topic.fullName),
+      title: Text(topic.name),
+      subtitle: topic.description != null ? Text(topic.description!) : null,
       onTap: () => _openChat(context),
     );
   }
 
   void _openChat(BuildContext context) {
-    Navigator.pushNamed(context, ChatScreen.route, arguments: topic.id);
+    Navigator.pushNamed(context, ChatScreen.route, arguments: topic);
   }
 }

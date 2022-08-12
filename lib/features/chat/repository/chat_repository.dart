@@ -27,7 +27,7 @@ abstract class IChatRepository {
   ///
   /// [message] mustn't be empty and longer than [maxMessageLength]. Throws an
   /// [InvalidMessageException].
-  Future<void> sendMessage(String message);
+  Future<void> sendMessage({required String message, required int chatId});
 
   /// Sends the message by [location] contents. [message] is optional.
   ///
@@ -41,11 +41,14 @@ abstract class IChatRepository {
   /// If [message] is non-null, content mustn't be empty and longer than
   /// [maxMessageLength]. Throws an [InvalidMessageException].
   Future<void> sendGeolocationMessage({
+    required int chatId,
     required ChatGeolocationDto location,
     String? message,
   });
 
   Future<List<ChatUserDto>> getUsers(List<int> ids);
+
+  Future<ChatUserDto?> getLocalUser();
 }
 
 /// Simple implementation of [IChatRepository], using [StudyJamClient].
@@ -89,19 +92,24 @@ class ChatRepository implements IChatRepository {
   }
 
   @override
-  Future<void> sendMessage(String message) {
-    return _send(message: message);
+  Future<void> sendMessage({
+    required int chatId,
+    required String message,
+  }) {
+    return _send(chatId: chatId, message: message);
   }
 
   @override
   Future<void> sendGeolocationMessage({
+    required int chatId,
     required ChatGeolocationDto location,
     String? message,
   }) {
-    return _send(location: location, message: message);
+    return _send(chatId: chatId, location: location, message: message);
   }
 
   Future<void> _send({
+    required int chatId,
     ChatGeolocationDto? location,
     String? message,
   }) async {
@@ -110,6 +118,7 @@ class ChatRepository implements IChatRepository {
     }
 
     await _client.sendMessage(SjMessageSendsDto(
+      chatId: chatId,
       text: message,
       geopoint: location?.toGeopoint(),
     ));
@@ -125,5 +134,11 @@ class ChatRepository implements IChatRepository {
             ? ChatUserLocalDto.fromSJClient(u)
             : ChatUserDto.fromSJClient(u))
         .toList();
+  }
+
+  @override
+  Future<ChatUserDto?> getLocalUser() async {
+    final localUser = await _client.getUser();
+    return localUser != null ? ChatUserLocalDto.fromSJClient(localUser) : null;
   }
 }

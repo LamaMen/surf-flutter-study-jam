@@ -6,14 +6,15 @@ import 'package:surf_practice_chat_flutter/features/topics/models/chat_topic_sen
 ///
 /// Is different from [ChatTopicSendDto], because it does contain id.
 /// This topic has already been created in API.
-class ChatTopicDto with ModelWithInitials {
+class ChatTopicDto with ModelWithAvatar {
   /// Topic's unique id.
   final int id;
 
   /// Topic's name.
   ///
   /// Should be less than 128 characters long.
-  final String? name;
+  @override
+  final String name;
 
   /// Topic's description.
   ///
@@ -21,21 +22,25 @@ class ChatTopicDto with ModelWithInitials {
   final String? description;
 
   @override
-  String get fullName => name ?? 'Новый чат';
+  final String? avatar;
 
   /// Constructor for [ChatTopicDto].
   const ChatTopicDto({
     required this.id,
-    this.name,
+    String? name,
     this.description,
-  });
+    this.avatar,
+  }) : name = name ?? 'Новый чат';
 
   /// Named constructor for converting DTO from [StudyJamClient].
   ChatTopicDto.fromSJClient({
     required SjChatDto sjChatDto,
-  })  : id = sjChatDto.id,
-        name = sjChatDto.name,
-        description = sjChatDto.description;
+  }) : this(
+          id: sjChatDto.id,
+          name: sjChatDto.name,
+          description: sjChatDto.description,
+          avatar: sjChatDto.avatar,
+        );
 
   @override
   String toString() =>

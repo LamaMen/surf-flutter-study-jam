@@ -1,9 +1,9 @@
-mixin ModelWithInitials {
-  String get fullName;
+mixin ModelWithAvatar {
+  String get name;
 
   String get initials {
     final pattern = RegExp(r"[^a-zA-Zа-яА-Я\s]+");
-    final byWords = fullName
+    final byWords = name
         .replaceAll(pattern, '')
         .split(' ')
         .where((word) => word.isNotEmpty);
@@ -14,4 +14,6 @@ mixin ModelWithInitials {
 
     return '${byWords.first[0]}${byWords.first[1]}'.toUpperCase();
   }
+
+  String? get avatar;
 }
