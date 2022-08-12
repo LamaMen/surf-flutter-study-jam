@@ -20,6 +20,13 @@ dependencies:
   injectable: ^1.5.3
   get_it: ^7.2.0
   flutter_secure_storage: ^5.1.0
+  bubble: ^1.2.1
+  intl: ^0.17.0
+  flutter_map: ^2.2.0
+  location: ^4.4.0
+  latlong2: ^0.8.1
+  map_launcher: ^2.3.0+1
+  geolocator: ^9.0.1
 
 dev_dependencies:
   flutter_test:
