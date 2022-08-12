@@ -19,27 +19,43 @@ class AvatarWidget extends StatelessWidget {
   }
 }
 
-class _Avatar extends StatelessWidget {
+class _Avatar extends StatefulWidget {
   final ModelWithAvatar model;
 
   const _Avatar(this.model);
 
+  bool get isShowAvatar => model.avatar != null;
+
+  String get avatar => model.avatar!;
+
+  String get initials => model.initials;
+
+  @override
+  State<_Avatar> createState() => _AvatarState();
+}
+
+class _AvatarState extends State<_Avatar> {
+  bool isImageNotLoaded = false;
+
   @override
   Widget build(BuildContext context) {
-    final colorIndex = model.hashCode % colors.length;
+    final colorIndex = widget.model.hashCode % colors.length;
     final color = colors[colorIndex];
     final textColor =
         color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
 
-    final image = model.avatar != null ? NetworkImage(model.avatar!) : null;
-    final child = model.avatar == null
-        ? Text(model.initials, style: TextStyle(color: textColor))
-        : null;
+    final image = widget.isShowAvatar ? NetworkImage(widget.avatar) : null;
+    final initials = Text(widget.initials, style: TextStyle(color: textColor));
 
     return CircleAvatar(
       backgroundColor: color,
       backgroundImage: image,
-      child: child,
+      onBackgroundImageError: widget.model.avatar != null ? onError : null,
+      child: !widget.isShowAvatar || isImageNotLoaded ? initials : null,
     );
+  }
+
+  void onError(Object exception, StackTrace? stackTrace) {
+    setState(() => isImageNotLoaded = true);
   }
 }

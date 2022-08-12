@@ -8,9 +8,11 @@ import 'package:surf_practice_chat_flutter/features/chat/bloc/chat/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/bloc/title/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/screens/chat_screen.dart';
 import 'package:surf_practice_chat_flutter/features/splash/screen/splash_screen.dart';
+import 'package:surf_practice_chat_flutter/features/topics/bloc/create_topic/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/topics/bloc/logout/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/topics/bloc/topics/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/topics/models/chat_topic_dto.dart';
+import 'package:surf_practice_chat_flutter/features/topics/screens/create_topic_screen.dart';
 import 'package:surf_practice_chat_flutter/features/topics/screens/topics_screen.dart';
 
 void main() async {
@@ -37,6 +39,12 @@ class MyApp extends StatelessWidget {
               BlocProvider<AppBarBloc>(create: (_) => getIt<AppBarBloc>()),
             ],
             child: const TopicsScreen(),
+          );
+        },
+        CreateTopicScreen.route: (_) {
+          return BlocProvider<CreateTopicBloc>(
+            create: (_) => getIt<CreateTopicBloc>(),
+            child: const CreateTopicScreen(),
           );
         },
         AuthScreen.route: (_) {

@@ -7,6 +7,7 @@ import 'package:surf_practice_chat_flutter/features/chat/screens/chat_screen.dar
 import 'package:surf_practice_chat_flutter/features/topics/bloc/logout/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/topics/bloc/topics/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/topics/models/chat_topic_dto.dart';
+import 'package:surf_practice_chat_flutter/features/topics/screens/create_topic_screen.dart';
 
 /// Screen with different chat topics to go to.
 class TopicsScreen extends StatefulWidget {
@@ -47,11 +48,16 @@ class _TopicsScreenState extends State<TopicsScreen> {
           return _TopicsBody(topics: state.topics);
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, CreateTopicScreen.route)
+            .then((_) => _update()),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
   void _update() {
-    const event = GetMessagesEvent();
+    const event = GetTopicsEvent();
     context.read<TopicsBloc>().add(event);
   }
 

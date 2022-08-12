@@ -23,6 +23,8 @@ class ChatTopicSendDto {
     this.description,
   });
 
+  const ChatTopicSendDto.empty() : this(name: '', description: '');
+
   /// Transforms from [ChatTopicSendDto] to API model [SjChatSendsDto].
   SjChatSendsDto toSjChatSendsDto() => SjChatSendsDto(
         name: name,
@@ -30,5 +32,6 @@ class ChatTopicSendDto {
       );
 
   @override
-  String toString() => 'ChatTopicSendDto(name: $name, description: $description)';
+  String toString() =>
+      'ChatTopicSendDto(name: $name, description: $description)';
 }

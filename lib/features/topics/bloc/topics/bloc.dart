@@ -6,6 +6,7 @@ import 'package:surf_practice_chat_flutter/features/topics/models/chat_topic_dto
 import 'package:surf_practice_chat_flutter/features/topics/usecase/topics_usecase.dart';
 
 part 'event.dart';
+
 part 'state.dart';
 
 @injectable
@@ -15,11 +16,11 @@ class TopicsBloc extends Bloc<TopicsEvent, TopicsState> {
   TopicsBloc(
     this._topicsUsecase,
   ) : super(const TopicsState.initial()) {
-    on<GetMessagesEvent>(onGetMessages);
+    on<GetTopicsEvent>(onGetTopics);
   }
 
-  Future<void> onGetMessages(
-    GetMessagesEvent event,
+  Future<void> onGetTopics(
+    GetTopicsEvent event,
     Emitter<TopicsState> emit,
   ) async {
     emit(LoadingTopicsState(state));
