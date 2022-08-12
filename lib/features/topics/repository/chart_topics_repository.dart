@@ -1,3 +1,5 @@
+import 'package:injectable/injectable.dart';
+import 'package:surf_practice_chat_flutter/core/client/client.dart';
 import 'package:surf_study_jam/surf_study_jam.dart';
 import 'package:surf_practice_chat_flutter/features/topics/models/chat_topic_dto.dart';
 import 'package:surf_practice_chat_flutter/features/topics/models/chat_topic_send_dto.dart';
@@ -24,30 +26,27 @@ abstract class IChatTopicsRepository {
 }
 
 /// Simple implementation of [IChatTopicsRepository], using [StudyJamClient].
+@Singleton(as: IChatTopicsRepository)
 class ChatTopicsRepository implements IChatTopicsRepository {
-  final StudyJamClient _studyJamClient;
+  final Client _client;
 
   /// Constructor for [ChatTopicsRepository].
-  ChatTopicsRepository(this._studyJamClient);
+  ChatTopicsRepository(this._client);
 
   @override
   Future<Iterable<ChatTopicDto>> getTopics({
     required DateTime topicsStartDate,
   }) async {
-    final updates = await _studyJamClient.getUpdates(chats: topicsStartDate);
-    final topicsIds = updates.chats;
-    if (topicsIds == null) {
-      return [];
-    }
-    final topics = await _studyJamClient.getChatsByIds(topicsIds);
+    final topicsIds = await _client.getChatsUpdates(topicsStartDate);
+    if (topicsIds == null) return [];
 
-    return topics.map((sjChatDto) => ChatTopicDto.fromSJClient(sjChatDto: sjChatDto));
+    final topics = await _client.getChatsByIds(topicsIds);
+    return topics.map((t) => ChatTopicDto.fromSJClient(sjChatDto: t));
   }
 
   @override
-  Future<ChatTopicDto> createTopic(ChatTopicSendDto chatTopicSendDto) async {
-    final sjChatDto = await _studyJamClient.createChat(chatTopicSendDto.toSjChatSendsDto());
-
+  Future<ChatTopicDto> createTopic(ChatTopicSendDto chatTopic) async {
+    final sjChatDto = await _client.createChat(chatTopic.toSjChatSendsDto());
     return ChatTopicDto.fromSJClient(sjChatDto: sjChatDto);
   }
 }

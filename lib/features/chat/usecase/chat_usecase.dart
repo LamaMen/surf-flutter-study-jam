@@ -3,7 +3,6 @@ import 'package:injectable/injectable.dart';
 import 'package:surf_practice_chat_flutter/core/result/result.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_geolocation_geolocation_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
-import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_location_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/repository/chat_repository.dart';
 
 @singleton
@@ -12,41 +11,49 @@ class ChatUseCase {
 
   ChatUseCase(this._chatRepository);
 
-  FutureResult<Iterable<ChatMessageDto>> getMessages() async {
+  FutureResult<Iterable<ChatMessageDto>> getMessages(int chatId) async {
     try {
-      final newMessages = await _fetchMessages();
+      final newMessages = await _fetchMessages(chatId);
       return Ok(newMessages);
     } on Exception catch (e) {
       return Fail(e);
     }
   }
 
-  FutureResult<Iterable<ChatMessageDto>> sendMessage(String message) async {
+  FutureResult<Iterable<ChatMessageDto>> sendMessage({
+    required String message,
+    required int chatId,
+  }) async {
     try {
-      await _chatRepository.sendMessage(message);
-      final newMessages = await _fetchMessages();
+      await _chatRepository.sendMessage(chatId: chatId, message: message);
+      final newMessages = await _fetchMessages(chatId);
       return Ok(newMessages);
     } on Exception catch (e) {
       return Fail(e);
     }
   }
 
-  FutureResult<Iterable<ChatMessageDto>> sendGeolocationMessage() async {
+  FutureResult<Iterable<ChatMessageDto>> sendGeolocationMessage(
+    int chatId,
+  ) async {
     try {
       await _chatRepository.sendGeolocationMessage(
+        chatId: chatId,
         location: await _determinePosition(),
         message: 'Мое расположение :)',
       );
 
-      final newMessages = await _fetchMessages();
+      final newMessages = await _fetchMessages(chatId);
       return Ok(newMessages);
     } on Exception catch (e) {
       return Fail(e);
     }
   }
 
-  Future<Iterable<ChatMessageDto>> _fetchMessages() async {
-    final rawMessages = await _chatRepository.getMessages();
+  Future<Iterable<ChatMessageDto>> _fetchMessages(int chatId) async {
+    final rawMessages = await _chatRepository.getMessages(chatId);
+    if (rawMessages.isEmpty) return [];
+
     final userIds = rawMessages.map((m) => m.userId).toSet().toList();
     final users = await _chatRepository.getUsers(userIds);
 
@@ -63,24 +70,14 @@ class ChatUseCase {
         isLast = true;
       }
 
-      messages.add(m.geopoint == null
-          ? ChatMessageDto.fromSJClient(message: m, user: user, isLast: isLast)
-          : ChatMessageGeolocationDto.fromSJClient(
-              message: m,
-              user: user,
-              isLast: isLast,
-            ));
+      messages.add(ChatMessageDto.create(
+        message: m,
+        user: user,
+        isLast: isLast,
+      ));
     }
 
-    final me = messages
-        .where((m) =>
-            (m is ChatMessageGeolocationDto && m.location.isValid) ||
-            (m is! ChatMessageGeolocationDto &&
-                m.message != null &&
-                m.message!.isNotEmpty))
-        .toList();
-
-    return me;
+    return messages.where((m) => m.isValid).toList();
   }
 
   Future<ChatGeolocationDto> _determinePosition() async {

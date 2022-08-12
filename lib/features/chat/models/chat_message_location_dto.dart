@@ -29,6 +29,9 @@ class ChatMessageGeolocationDto extends ChatMessageDto {
         );
 
   @override
+  bool get isValid => location.isValid;
+
+  @override
   String toString() =>
       'ChatMessageGeolocationDto(location: $location) extends ${super.toString()}';
 }

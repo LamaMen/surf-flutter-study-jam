@@ -14,7 +14,11 @@ class ChatUserLocalDto extends ChatUserDto {
 
   /// Factory-like constructor for converting DTO from [StudyJamClient].
   ChatUserLocalDto.fromSJClient(SjUserDto sjUserDto)
-      : super(id: sjUserDto.id, name: sjUserDto.username);
+      : super(
+          id: sjUserDto.id,
+          name: sjUserDto.username,
+          avatar: sjUserDto.avatar,
+        );
 
   @override
   String toString() => 'ChatUserLocalDto(name: $name)';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:surf_practice_chat_flutter/features/auth/screens/auth_screen.dart';
-import 'package:surf_practice_chat_flutter/features/chat/bloc/bloc.dart';
-import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
+import 'package:surf_practice_chat_flutter/features/app_bar/widgets/chat_app_bar.dart';
+import 'package:surf_practice_chat_flutter/features/chat/bloc/chat/bloc.dart';
+import 'package:surf_practice_chat_flutter/features/chat/bloc/title/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/widgets/chat_field.dart';
 import 'package:surf_practice_chat_flutter/features/chat/widgets/chat_message.dart';
 
@@ -29,10 +29,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return BlocListener<ChatBloc, ChatState>(
       listener: (context, state) {
-        if (state is LogoutChatState) {
-          Navigator.pushReplacementNamed(context, AuthScreen.route);
-        }
-
         if (state is FailedChatState) {
           final snackBar = SnackBar(
             content: Text(state.exception),
@@ -42,25 +38,24 @@ class _ChatScreenState extends State<ChatScreen> {
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
         }
       },
-      child: Scaffold(
-        backgroundColor: colorScheme.background,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: _ChatAppBar(onUpdatePressed: _update),
-        ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: BlocBuilder<ChatBloc, ChatState>(
-                builder: (context, state) {
-                  return _ChatBody(messages: state.messages);
-                },
-              ),
+      child: BlocBuilder<ChatTitleBloc, ChatTitleState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: colorScheme.background,
+            appBar: ChatAppBar(
+              onUpdatePressed: _update,
+              title: state.title,
+              subtitle: state.subtitle,
             ),
-            ChatTextField(onSendPressed: _onSendPressed),
-          ],
-        ),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Expanded(child: _ChatBody()),
+                ChatTextField(onSendPressed: _onSendPressed),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -77,56 +72,25 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
 class _ChatBody extends StatelessWidget {
-  final Iterable<ChatMessageDto> messages;
-
   const _ChatBody({
-    required this.messages,
-    Key? key,
-  }) : super(key: key);
-
-  int get count => messages.length;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: count,
-      reverse: true,
-      itemBuilder: (_, index) => ChatMessage(
-        chatData: messages.elementAt(count - (index + 1)),
-      ),
-    );
-  }
-}
-
-class _ChatAppBar extends StatelessWidget {
-  final VoidCallback onUpdatePressed;
-
-  const _ChatAppBar({
-    required this.onUpdatePressed,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      leading: IconButton(
-        onPressed: () => _singOut(context),
-        icon: const Icon(Icons.logout),
-      ),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          IconButton(
-            onPressed: onUpdatePressed,
-            icon: const Icon(Icons.refresh),
+    return BlocBuilder<ChatBloc, ChatState>(
+      builder: (context, state) {
+        final messages = state.messages;
+        final count = messages.length;
+
+        return ListView.builder(
+          itemCount: count,
+          reverse: true,
+          itemBuilder: (_, index) => ChatMessage(
+            chatData: messages.elementAt(count - (index + 1)),
           ),
-        ],
-      ),
+        );
+      },
     );
-  }
-
-  void _singOut(BuildContext context) {
-    const event = SingOutEvent();
-    context.read<ChatBloc>().add(event);
   }
 }

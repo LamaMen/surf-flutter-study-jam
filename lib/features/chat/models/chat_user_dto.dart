@@ -1,21 +1,32 @@
+import 'package:surf_practice_chat_flutter/core/utils/string_utils.dart';
+import 'package:surf_practice_chat_flutter/core/widgets/avatar/model_with_initials.dart';
 import 'package:surf_study_jam/surf_study_jam.dart';
 
 /// Basic model, representing chat user.
-class ChatUserDto {
+class ChatUserDto with ModelWithAvatar {
   final int id;
 
   /// User's name.
+  @override
   final String name;
 
+  @override
+  final String? avatar;
+
   /// Constructor for [ChatUserDto].
-  const ChatUserDto({
+  ChatUserDto({
     required this.id,
     required String? name,
-  }) : name = name ?? 'Неизвестный';
+    this.avatar,
+  }) : name = name.withDefault('Неизвестный');
 
   /// Factory-like constructor for converting DTO from [StudyJamClient].
   ChatUserDto.fromSJClient(SjUserDto sjUserDto)
-      : this(id: sjUserDto.id, name: sjUserDto.username);
+      : this(
+          id: sjUserDto.id,
+          name: sjUserDto.username,
+          avatar: sjUserDto.avatar,
+        );
 
   @override
   String toString() => 'ChatUserDto(name: $name)';
@@ -30,13 +41,4 @@ class ChatUserDto {
 
   @override
   int get hashCode => id.hashCode ^ name.hashCode;
-
-  String get initials {
-    final byWords = name.split(' ').where((w) => w.isNotEmpty);
-    if (byWords.length > 1) {
-      return '${byWords.first[0]}${byWords.last[0]}'.toUpperCase();
-    }
-
-    return '${byWords.first[0]}${byWords.first[1]}'.toUpperCase();
-  }
 }

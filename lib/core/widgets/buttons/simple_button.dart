@@ -1,26 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:surf_practice_chat_flutter/features/auth/bloc/bloc.dart';
 
-class SignInButton extends StatelessWidget {
-  final VoidCallback voidCallback;
+class SimpleButton extends StatelessWidget {
+  final VoidCallback onPressed;
   final bool isLoading;
   final bool isActive;
+  final double height;
+  final String title;
 
-  const SignInButton({
+  const SimpleButton({
     super.key,
     required this.isLoading,
     required this.isActive,
-    required this.voidCallback,
+    required this.onPressed,
+    this.height = 50,
+    required this.title,
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: height,
       child: ElevatedButton(
-        onPressed: !isLoading && isActive ? () => signIn(context) : null,
+        onPressed: !isLoading && isActive ? () => onPressed() : null,
         style: ButtonStyle(
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -29,7 +31,7 @@ class SignInButton extends StatelessWidget {
         child: isLoading
             ? const CircularProgressIndicator()
             : Text(
-                'Войти',
+                title,
                 style: Theme.of(context)
                     .textTheme
                     .titleMedium
@@ -37,11 +39,5 @@ class SignInButton extends StatelessWidget {
               ),
       ),
     );
-  }
-
-  void signIn(BuildContext context) {
-    voidCallback();
-    const event = CheckUserDataEvent();
-    context.read<AuthBloc>().add(event);
   }
 }

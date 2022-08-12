@@ -3,12 +3,12 @@ import 'package:surf_practice_chat_flutter/core/result/result.dart';
 import 'package:surf_practice_chat_flutter/features/auth/models/token_dto.dart';
 import 'package:surf_practice_chat_flutter/features/auth/screens/auth_screen.dart';
 import 'package:surf_practice_chat_flutter/features/auth/usecase/token_storage.dart';
-import 'package:surf_practice_chat_flutter/features/chat/screens/chat_screen.dart';
+import 'package:surf_practice_chat_flutter/features/topics/screens/topics_screen.dart';
 
 class SplashScreen extends StatelessWidget {
   final TokenStorage storage;
 
-  static const route = '/splash';
+  static const route = '/';
 
   const SplashScreen({super.key, required this.storage});
 
@@ -22,7 +22,7 @@ class SplashScreen extends StatelessWidget {
             final data = snapshot.data!;
             final route = data.fold(
               (_) => AuthScreen.route,
-              (_) => ChatScreen.route,
+              (_) => TopicsScreen.route,
             );
 
             WidgetsBinding.instance.addPostFrameCallback(
