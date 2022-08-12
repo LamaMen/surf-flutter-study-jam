@@ -1,3 +1,4 @@
+import 'package:surf_practice_chat_flutter/core/utils/string_utils.dart';
 import 'package:surf_practice_chat_flutter/core/widgets/avatar/model_with_initials.dart';
 import 'package:surf_study_jam/surf_study_jam.dart';
 
@@ -13,11 +14,11 @@ class ChatUserDto with ModelWithAvatar {
   final String? avatar;
 
   /// Constructor for [ChatUserDto].
-  const ChatUserDto({
+  ChatUserDto({
     required this.id,
     required String? name,
     this.avatar,
-  }) : name = name ?? 'Неизвестный';
+  }) : name = name.withDefault('Неизвестный');
 
   /// Factory-like constructor for converting DTO from [StudyJamClient].
   ChatUserDto.fromSJClient(SjUserDto sjUserDto)

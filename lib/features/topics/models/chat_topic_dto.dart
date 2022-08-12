@@ -1,3 +1,4 @@
+import 'package:surf_practice_chat_flutter/core/utils/string_utils.dart';
 import 'package:surf_practice_chat_flutter/core/widgets/avatar/model_with_initials.dart';
 import 'package:surf_study_jam/surf_study_jam.dart';
 import 'package:surf_practice_chat_flutter/features/topics/models/chat_topic_send_dto.dart';
@@ -25,12 +26,12 @@ class ChatTopicDto with ModelWithAvatar {
   final String? avatar;
 
   /// Constructor for [ChatTopicDto].
-  const ChatTopicDto({
+  ChatTopicDto({
     required this.id,
     String? name,
     this.description,
     this.avatar,
-  }) : name = name ?? 'Новый чат';
+  }) : name = name.withDefault('Новый чат');
 
   /// Named constructor for converting DTO from [StudyJamClient].
   ChatTopicDto.fromSJClient({

@@ -26,19 +26,20 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (model.avatar != null) {
-      return CircleAvatar(
-        backgroundImage: NetworkImage(model.avatar!),
-      );
-    }
     final colorIndex = model.hashCode % colors.length;
     final color = colors[colorIndex];
     final textColor =
         color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
 
+    final image = model.avatar != null ? NetworkImage(model.avatar!) : null;
+    final child = model.avatar == null
+        ? Text(model.initials, style: TextStyle(color: textColor))
+        : null;
+
     return CircleAvatar(
       backgroundColor: color,
-      child: Text(model.initials, style: TextStyle(color: textColor)),
+      backgroundImage: image,
+      child: child,
     );
   }
 }
