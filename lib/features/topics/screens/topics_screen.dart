@@ -74,11 +74,13 @@ class _TopicsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8),
-      itemCount: topics.length,
-      itemBuilder: (_, index) => _TopicItem(
-        topic: topics.elementAt(index),
+    return SafeArea(
+      child: ListView.builder(
+        padding: const EdgeInsets.only(top: 8),
+        itemCount: topics.length,
+        itemBuilder: (_, index) => _TopicItem(
+          topic: topics.elementAt(index),
+        ),
       ),
     );
   }
