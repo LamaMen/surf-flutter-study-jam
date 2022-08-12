@@ -1,3 +1,4 @@
+import 'package:surf_practice_chat_flutter/core/widgets/avatar/model_with_initials.dart';
 import 'package:surf_study_jam/surf_study_jam.dart';
 import 'package:surf_practice_chat_flutter/features/topics/models/chat_topic_send_dto.dart';
 
@@ -5,7 +6,7 @@ import 'package:surf_practice_chat_flutter/features/topics/models/chat_topic_sen
 ///
 /// Is different from [ChatTopicSendDto], because it does contain id.
 /// This topic has already been created in API.
-class ChatTopicDto {
+class ChatTopicDto with ModelWithInitials {
   /// Topic's unique id.
   final int id;
 
@@ -18,6 +19,9 @@ class ChatTopicDto {
   ///
   /// Should be less than 1024 characters long.
   final String? description;
+
+  @override
+  String get fullName => name ?? 'Новый чат';
 
   /// Constructor for [ChatTopicDto].
   const ChatTopicDto({
@@ -34,5 +38,17 @@ class ChatTopicDto {
         description = sjChatDto.description;
 
   @override
-  String toString() => 'ChatTopicDto(id: $id, name: $name, description: $description)';
+  String toString() =>
+      'ChatTopicDto(id: $id, name: $name, description: $description)';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatTopicDto &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name;
+
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode;
 }

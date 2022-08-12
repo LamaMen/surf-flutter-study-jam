@@ -27,15 +27,32 @@ class Client {
     return secureClient.getUsers(ids);
   }
 
-  Future<SjUpdatesIdsDto> getUpdates({
+  Future<List<int>?> getChatsUpdates(DateTime? chats) async {
+    final updates = await _getUpdates(chats: chats);
+    return updates.chats;
+  }
+
+  Future<SjUpdatesIdsDto> _getUpdates({
     DateTime? users,
     DateTime? msgs,
+    DateTime? chats,
   }) async {
     final secureClient = await _getClient();
     return secureClient.getUpdates(
+      chats: chats,
       users: users,
       msgs: msgs,
     );
+  }
+
+  Future<List<SjChatDto>> getChatsByIds(List<int> ids) async {
+    final secureClient = await _getClient();
+    return secureClient.getChatsByIds(ids);
+  }
+
+  Future<SjChatDto> createChat(SjChatSendsDto chat) async {
+    final secureClient = await _getClient();
+    return secureClient.createChat(chat);
   }
 
   Future<List<SjMessageDto>> getMessagesByIds(List<int> ids) async {
@@ -44,11 +61,13 @@ class Client {
   }
 
   Future<List<SjMessageDto>> getMessages({
+    required int chatId,
     int? lastMessageId,
     int? limit,
   }) async {
     final secureClient = await _getClient();
     return secureClient.getMessages(
+      chatId: chatId,
       lastMessageId: lastMessageId,
       limit: limit,
     );

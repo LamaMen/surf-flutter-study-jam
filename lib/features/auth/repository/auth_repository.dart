@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import 'package:surf_practice_chat_flutter/core/client/login_client.dart';
+import 'package:surf_practice_chat_flutter/core/client/client.dart';
 import 'package:surf_practice_chat_flutter/features/auth/exceptions/auth_exception.dart';
 import 'package:surf_practice_chat_flutter/features/auth/models/token_dto.dart';
 import 'package:surf_study_jam/surf_study_jam.dart';

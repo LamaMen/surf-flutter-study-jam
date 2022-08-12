@@ -12,41 +12,41 @@ class ChatUseCase {
 
   ChatUseCase(this._chatRepository);
 
-  FutureResult<Iterable<ChatMessageDto>> getMessages() async {
+  FutureResult<Iterable<ChatMessageDto>> getMessages(int chatId) async {
     try {
-      final newMessages = await _fetchMessages();
+      final newMessages = await _fetchMessages(chatId);
       return Ok(newMessages);
     } on Exception catch (e) {
       return Fail(e);
     }
   }
 
-  FutureResult<Iterable<ChatMessageDto>> sendMessage(String message) async {
+  FutureResult<void> sendMessage(String message) async {
     try {
       await _chatRepository.sendMessage(message);
-      final newMessages = await _fetchMessages();
-      return Ok(newMessages);
+      return const Ok(null);
     } on Exception catch (e) {
       return Fail(e);
     }
   }
 
-  FutureResult<Iterable<ChatMessageDto>> sendGeolocationMessage() async {
+  FutureResult<void> sendGeolocationMessage() async {
     try {
       await _chatRepository.sendGeolocationMessage(
         location: await _determinePosition(),
         message: 'Мое расположение :)',
       );
 
-      final newMessages = await _fetchMessages();
-      return Ok(newMessages);
+      return const Ok(null);
     } on Exception catch (e) {
       return Fail(e);
     }
   }
 
-  Future<Iterable<ChatMessageDto>> _fetchMessages() async {
-    final rawMessages = await _chatRepository.getMessages();
+  Future<Iterable<ChatMessageDto>> _fetchMessages(int chatId) async {
+    final rawMessages = await _chatRepository.getMessages(chatId);
+    if (rawMessages.isEmpty) return [];
+
     final userIds = rawMessages.map((m) => m.userId).toSet().toList();
     final users = await _chatRepository.getUsers(userIds);
 

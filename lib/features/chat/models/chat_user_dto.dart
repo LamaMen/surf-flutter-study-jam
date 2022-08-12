@@ -1,11 +1,15 @@
+import 'package:surf_practice_chat_flutter/core/widgets/avatar/model_with_initials.dart';
 import 'package:surf_study_jam/surf_study_jam.dart';
 
 /// Basic model, representing chat user.
-class ChatUserDto {
+class ChatUserDto with ModelWithInitials {
   final int id;
 
   /// User's name.
   final String name;
+
+  @override
+  String get fullName => name;
 
   /// Constructor for [ChatUserDto].
   const ChatUserDto({
@@ -30,13 +34,4 @@ class ChatUserDto {
 
   @override
   int get hashCode => id.hashCode ^ name.hashCode;
-
-  String get initials {
-    final byWords = name.split(' ').where((w) => w.isNotEmpty);
-    if (byWords.length > 1) {
-      return '${byWords.first[0]}${byWords.last[0]}'.toUpperCase();
-    }
-
-    return '${byWords.first[0]}${byWords.first[1]}'.toUpperCase();
-  }
 }

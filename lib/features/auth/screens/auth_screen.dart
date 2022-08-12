@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surf_practice_chat_flutter/features/auth/bloc/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/auth/widgets/auth_field.dart';
 import 'package:surf_practice_chat_flutter/features/auth/widgets/signin_button.dart';
-import 'package:surf_practice_chat_flutter/features/chat/screens/chat_screen.dart';
+import 'package:surf_practice_chat_flutter/features/topics/screens/topics_screen.dart';
 
 /// Screen for authorization process.
 class AuthScreen extends StatefulWidget {
@@ -50,7 +50,7 @@ class _AuthScreenState extends State<AuthScreen> {
               listener: (context, state) {
                 if (state.isAuthenticated) {
                   ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                  Navigator.pushReplacementNamed(context, ChatScreen.route);
+                  Navigator.pushReplacementNamed(context, TopicsScreen.route);
                 }
 
                 if (state.exception != null) {

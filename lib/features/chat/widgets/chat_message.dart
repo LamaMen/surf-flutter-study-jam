@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:map_launcher/map_launcher.dart' as launcher;
 import 'package:surf_practice_chat_flutter/core/utils/date_utils.dart';
 import 'package:surf_practice_chat_flutter/core/utils/list_utils.dart';
+import 'package:surf_practice_chat_flutter/core/widgets/avatar/avatar_widget.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_geolocation_geolocation_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_location_dto.dart';
@@ -39,6 +40,7 @@ class ChatMessage extends StatelessWidget {
 }
 
 class _Message extends StatelessWidget {
+  static const double _size = 32;
   final ChatUserDto user;
   final DateTime time;
   final String? message;
@@ -64,7 +66,9 @@ class _Message extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         verticalDirection: VerticalDirection.up,
         children: [
-          _ChatAvatar(user: user, isShow: isLast),
+          isLast
+              ? AvatarWidget(model: user, size: _size)
+              : const SizedBox(width: _size, height: _size),
           const SizedBox(width: 4),
           Expanded(
             flex: 4,
@@ -104,50 +108,6 @@ class _Message extends StatelessWidget {
   BubbleNip get _nip {
     if (!isLast) return BubbleNip.no;
     return isSelf ? BubbleNip.rightBottom : BubbleNip.leftBottom;
-  }
-}
-
-class _ChatAvatar extends StatelessWidget {
-  static const double _size = 32;
-
-  final ChatUserDto user;
-  final bool isShow;
-
-  const _ChatAvatar({
-    Key? key,
-    required this.user,
-    required this.isShow,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (!isShow) {
-      return const SizedBox(width: _size, height: _size);
-    }
-
-    final backgroundColor =
-        Colors.primaries[user.hashCode % Colors.primaries.length];
-    final foregroundColor =
-        backgroundColor.computeLuminance() > 0.5 ? Colors.black : Colors.white;
-
-    return SizedBox(
-      width: _size,
-      height: _size,
-      child: Material(
-        color: backgroundColor,
-        shape: const CircleBorder(),
-        child: Center(
-          child: Text(
-            user.initials,
-            style: TextStyle(
-              color: foregroundColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 

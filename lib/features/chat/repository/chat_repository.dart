@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import 'package:surf_practice_chat_flutter/core/client/login_client.dart';
+import 'package:surf_practice_chat_flutter/core/client/client.dart';
 import 'package:surf_practice_chat_flutter/features/chat/exceptions/invalid_message_exception.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_geolocation_geolocation_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
@@ -17,7 +17,7 @@ abstract class IChatRepository {
   /// Maximum length of one's message content,
   static const int maxMessageLength = 80;
 
-  Future<List<SjMessageDto>> getMessages();
+  Future<List<SjMessageDto>> getMessages(int chatId);
 
   /// Sends the message by with [message] content.
   ///
@@ -57,7 +57,7 @@ class ChatRepository implements IChatRepository {
   ChatRepository(this._client);
 
   @override
-  Future<List<SjMessageDto>> getMessages() async {
+  Future<List<SjMessageDto>> getMessages(int chatId) async {
     final messages = <SjMessageDto>[];
 
     var isLimitBroken = false;
@@ -69,14 +69,19 @@ class ChatRepository implements IChatRepository {
     // we're doing it in cycle.
     while (!isLimitBroken) {
       final batch = await _client.getMessages(
+        chatId: chatId,
         lastMessageId: lastMessageId,
         limit: batchSize,
       );
 
       messages.addAll(batch);
-      lastMessageId = batch.last.chatId;
-      if (batch.length < batchSize) {
+      if (batch.isEmpty) {
         isLimitBroken = true;
+      } else {
+        lastMessageId = batch.last.chatId;
+        if (batch.length < batchSize) {
+          isLimitBroken = true;
+        }
       }
     }
 

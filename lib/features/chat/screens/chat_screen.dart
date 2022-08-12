@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:surf_practice_chat_flutter/features/auth/screens/auth_screen.dart';
+import 'package:surf_practice_chat_flutter/features/app_bar/widgets/chat_app_bar.dart';
 import 'package:surf_practice_chat_flutter/features/chat/bloc/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/widgets/chat_field.dart';
@@ -29,10 +29,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return BlocListener<ChatBloc, ChatState>(
       listener: (context, state) {
-        if (state is LogoutChatState) {
-          Navigator.pushReplacementNamed(context, AuthScreen.route);
-        }
-
         if (state is FailedChatState) {
           final snackBar = SnackBar(
             content: Text(state.exception),
@@ -46,7 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
         backgroundColor: colorScheme.background,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(48),
-          child: _ChatAppBar(onUpdatePressed: _update),
+          child: ChatAppBar(onUpdatePressed: _update),
         ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -95,38 +91,5 @@ class _ChatBody extends StatelessWidget {
         chatData: messages.elementAt(count - (index + 1)),
       ),
     );
-  }
-}
-
-class _ChatAppBar extends StatelessWidget {
-  final VoidCallback onUpdatePressed;
-
-  const _ChatAppBar({
-    required this.onUpdatePressed,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      leading: IconButton(
-        onPressed: () => _singOut(context),
-        icon: const Icon(Icons.logout),
-      ),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          IconButton(
-            onPressed: onUpdatePressed,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _singOut(BuildContext context) {
-    const event = SingOutEvent();
-    context.read<ChatBloc>().add(event);
   }
 }

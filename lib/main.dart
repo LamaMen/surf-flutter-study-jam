@@ -7,6 +7,9 @@ import 'package:surf_practice_chat_flutter/features/auth/usecase/token_storage.d
 import 'package:surf_practice_chat_flutter/features/chat/bloc/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/screens/chat_screen.dart';
 import 'package:surf_practice_chat_flutter/features/splash/screen/splash_screen.dart';
+import 'package:surf_practice_chat_flutter/features/topics/bloc/logout/bloc.dart';
+import 'package:surf_practice_chat_flutter/features/topics/bloc/topics/bloc.dart';
+import 'package:surf_practice_chat_flutter/features/topics/screens/topics_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,12 +25,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       initialRoute: SplashScreen.route,
+      onGenerateRoute: _routes,
       routes: {
         SplashScreen.route: (_) => SplashScreen(storage: getIt<TokenStorage>()),
-        ChatScreen.route: (_) {
-          return BlocProvider<ChatBloc>(
-            create: (_) => getIt<ChatBloc>(),
-            child: const ChatScreen(),
+        TopicsScreen.route: (_) {
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider<TopicsBloc>(create: (_) => getIt<TopicsBloc>()),
+              BlocProvider<AppBarBloc>(create: (_) => getIt<AppBarBloc>()),
+            ],
+            child: const TopicsScreen(),
           );
         },
         AuthScreen.route: (_) {
@@ -38,5 +45,22 @@ class MyApp extends StatelessWidget {
         },
       },
     );
+  }
+
+  Route<dynamic>? _routes(RouteSettings settings) {
+    if (settings.name == ChatScreen.route) {
+      final chatId = settings.arguments as int? ?? 1;
+      return MaterialPageRoute(
+        builder: (_) {
+          return BlocProvider<ChatBloc>(
+            create: (_) => getIt<ChatBloc>(param1: chatId),
+            child: const ChatScreen(),
+          );
+        },
+      );
+    }
+
+    assert(false, 'Need to implement ${settings.name}');
+    return null;
   }
 }

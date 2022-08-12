@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:surf_practice_chat_flutter/features/auth/usecase/auth_usecase.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/usecase/chat_usecase.dart';
 
@@ -13,14 +12,12 @@ part 'state.dart';
 @injectable
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatUseCase _chatUseCase;
-  final AuthUseCase _authUseCase;
 
   ChatBloc(
+    @factoryParam int id,
     this._chatUseCase,
-    this._authUseCase,
-  ) : super(const ChatState.initial()) {
+  ) : super(ChatState.initial(id)) {
     on<GetMessagesEvent>(onGetMessages);
-    on<SingOutEvent>(onSingOut);
     on<SendMessageEvent>(onSendMessage);
     on<SendGeolocationMessageEvent>(onSendGeolocationMessage);
   }
@@ -30,24 +27,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     emit(LoadingChatState(state));
-    final messages = await _chatUseCase.getMessages();
+    final messages = await _chatUseCase.getMessages(state.chatId);
 
     emit(messages.fold(
       (f) => FailedChatState(state, f.toString()),
-      (m) => ChatState(messages: m),
+      (m) => state.copyWithMessages(m),
     ));
-  }
-
-  Future<void> onSingOut(
-    SingOutEvent event,
-    Emitter<ChatState> emit,
-  ) async {
-    final result = await _authUseCase.signOut();
-    if (result) {
-      emit(LogoutChatState(state));
-    } else {
-      emit(FailedChatState(state, 'Что-то пошло не так :)'));
-    }
   }
 
   Future<void> onSendMessage(
@@ -55,11 +40,16 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     emit(LoadingChatState(state));
-    final messages = await _chatUseCase.sendMessage(event.message);
 
+    final result = await _chatUseCase.sendMessage(event.message);
+    if (result.isLeft) {
+      emit(FailedChatState(state, result.left.toString()));
+    }
+
+    final messages = await _chatUseCase.getMessages(state.chatId);
     emit(messages.fold(
       (f) => FailedChatState(state, f.toString()),
-      (m) => ChatState(messages: m),
+      (m) => state.copyWithMessages(m),
     ));
   }
 
@@ -68,11 +58,16 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     emit(LoadingChatState(state));
-    final messages = await _chatUseCase.sendGeolocationMessage();
 
+    final result = await _chatUseCase.sendGeolocationMessage();
+    if (result.isLeft) {
+      emit(FailedChatState(state, result.left.toString()));
+    }
+
+    final messages = await _chatUseCase.getMessages(state.chatId);
     emit(messages.fold(
-          (f) => FailedChatState(state, f.toString()),
-          (m) => ChatState(messages: m),
+      (f) => FailedChatState(state, f.toString()),
+      (m) => state.copyWithMessages(m),
     ));
   }
 }
