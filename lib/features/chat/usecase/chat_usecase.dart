@@ -3,7 +3,6 @@ import 'package:injectable/injectable.dart';
 import 'package:surf_practice_chat_flutter/core/result/result.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_geolocation_geolocation_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
-import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_location_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/repository/chat_repository.dart';
 
 @singleton
@@ -71,24 +70,14 @@ class ChatUseCase {
         isLast = true;
       }
 
-      messages.add(m.geopoint == null
-          ? ChatMessageDto.fromSJClient(message: m, user: user, isLast: isLast)
-          : ChatMessageGeolocationDto.fromSJClient(
-              message: m,
-              user: user,
-              isLast: isLast,
-            ));
+      messages.add(ChatMessageDto.create(
+        message: m,
+        user: user,
+        isLast: isLast,
+      ));
     }
 
-    final me = messages
-        .where((m) =>
-            (m is ChatMessageGeolocationDto && m.location.isValid) ||
-            (m is! ChatMessageGeolocationDto &&
-                m.message != null &&
-                m.message!.isNotEmpty))
-        .toList();
-
-    return me;
+    return messages.where((m) => m.isValid).toList();
   }
 
   Future<ChatGeolocationDto> _determinePosition() async {

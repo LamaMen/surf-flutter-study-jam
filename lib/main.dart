@@ -7,6 +7,7 @@ import 'package:surf_practice_chat_flutter/features/auth/usecase/token_storage.d
 import 'package:surf_practice_chat_flutter/features/chat/bloc/chat/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/bloc/title/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/chat/screens/chat_screen.dart';
+import 'package:surf_practice_chat_flutter/features/chat/screens/images_screen.dart';
 import 'package:surf_practice_chat_flutter/features/splash/screen/splash_screen.dart';
 import 'package:surf_practice_chat_flutter/features/topics/bloc/create_topic/bloc.dart';
 import 'package:surf_practice_chat_flutter/features/topics/bloc/logout/bloc.dart';
@@ -75,6 +76,11 @@ class MyApp extends StatelessWidget {
           );
         },
       );
+    }
+
+    if (settings.name == ImagesScreen.route) {
+      final images = settings.arguments as List<String>;
+      return MaterialPageRoute(builder: (_) => ImagesScreen(images: images));
     }
 
     assert(false, 'Need to implement ${settings.name}');

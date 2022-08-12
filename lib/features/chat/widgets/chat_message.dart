@@ -8,9 +8,12 @@ import 'package:surf_practice_chat_flutter/core/utils/list_utils.dart';
 import 'package:surf_practice_chat_flutter/core/widgets/avatar/avatar_widget.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_geolocation_geolocation_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_dto.dart';
+import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_images_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_message_location_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_user_dto.dart';
 import 'package:surf_practice_chat_flutter/features/chat/models/chat_user_local_dto.dart';
+import 'package:surf_practice_chat_flutter/features/chat/screens/images_screen.dart';
+import 'package:surf_practice_chat_flutter/features/chat/widgets/image_view.dart';
 
 class ChatMessage extends StatelessWidget {
   final ChatMessageDto chatData;
@@ -19,15 +22,16 @@ class ChatMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget? content;
+
     if (chatData is ChatMessageGeolocationDto) {
       final data = chatData as ChatMessageGeolocationDto;
-      return _Message(
-        user: chatData.chatUserDto,
-        time: chatData.createdDateTime,
-        message: chatData.message,
-        isLast: chatData.isLast,
-        content: _LocationContent(location: data.location),
-      );
+      content = _LocationContent(location: data.location);
+    }
+
+    if (chatData is ChatMessageImagesDto) {
+      final data = chatData as ChatMessageImagesDto;
+      content = _ImagesContent(images: data.images);
     }
 
     return _Message(
@@ -35,6 +39,7 @@ class ChatMessage extends StatelessWidget {
       time: chatData.createdDateTime,
       message: chatData.message,
       isLast: chatData.isLast,
+      content: content,
     );
   }
 }
@@ -89,7 +94,12 @@ class _Message extends StatelessWidget {
                     if (message != null && message!.isNotEmpty) ...[
                       Text(message!)
                     ],
-                    if (content != null) ...[content!],
+                    if (content != null) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: content!,
+                      )
+                    ],
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(time.formatted),
@@ -127,19 +137,22 @@ class _LocationContent extends StatelessWidget {
 
     return SizedBox(
       height: 150,
-      child: FlutterMap(
-        options: MapOptions(
-          onTap: (_, __) => _openMap(),
-          center: marker.point,
-          zoom: 12.5,
-        ),
-        layers: [
-          TileLayerOptions(
-            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            subdomains: ['a', 'b', 'c'],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: FlutterMap(
+          options: MapOptions(
+            onTap: (_, __) => _openMap(),
+            center: marker.point,
+            zoom: 12.5,
           ),
-          MarkerLayerOptions(markers: [marker]),
-        ],
+          layers: [
+            TileLayerOptions(
+              urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+              subdomains: ['a', 'b', 'c'],
+            ),
+            MarkerLayerOptions(markers: [marker]),
+          ],
+        ),
       ),
     );
   }
@@ -150,6 +163,66 @@ class _LocationContent extends StatelessWidget {
     await availableMaps.first.showMarker(
       coords: launcher.Coords(location.latitude, location.longitude),
       title: "User Location",
+    );
+  }
+}
+
+class _ImagesContent extends StatelessWidget {
+  final List<String> images;
+
+  const _ImagesContent({
+    required this.images,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (images.length == 1) {
+      return ImageView(image: images.first, height: 150);
+    }
+
+    final otherCount = images.length - 1;
+    const height = 75.0;
+    return SizedBox(
+      height: height,
+      child: Row(
+        children: [
+          Expanded(child: ImageView(image: images.first, height: height)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: otherCount == 1
+                ? ImageView(image: images[1], height: height)
+                : _OpenAllImagesButton(images: images, otherCount: otherCount),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OpenAllImagesButton extends StatelessWidget {
+  final List<String> images;
+  final int otherCount;
+
+  const _OpenAllImagesButton({required this.images, required this.otherCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, ImagesScreen.route, arguments: images);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black),
+        ),
+        child: Center(
+          child: Text(
+            '+$otherCount',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+      ),
     );
   }
 }
